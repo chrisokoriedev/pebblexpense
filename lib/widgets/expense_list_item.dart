@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pebblexpense/core/constants/app_constants.dart';
+import 'package:pebblexpense/core/constants/app_padding.dart';
+import 'package:pebblexpense/core/utils.dart';
 import 'package:pebblexpense/models/expense.dart';
 
 class ExpenseListItem extends StatelessWidget {
@@ -14,60 +17,54 @@ class ExpenseListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Format amount to Naira (NGN)
-    final formatCurrency = NumberFormat.currency(
-      locale: 'en_NG',
-      symbol: '',
-      decimalDigits: 2,
-    );
-    final amountText = '-₦${formatCurrency.format(expense.amountKobo / 100)}';
+    // Format amount to Naira (NGN) without symbol, since we prepend it
+    final amountText = '-${AppUtils.formatCurrency(expense.amountKobo)}';
 
     // Format date/time
-    final timeText = DateFormat.jm().format(expense.createdAt.toLocal());
+    final timeText = AppUtils.formatTime(expense.createdAt);
 
     // Generate initial for avatar
-    final initial = expense.title.isNotEmpty ? expense.title.substring(0, 1).toUpperCase() : '?';
+    final initial = AppUtils.getInitials(expense.title);
 
-    // Background color for avatar (in the design, they use dark green or black)
-    final isFood = expense.category.toLowerCase() == 'food';
-    final avatarColor = isFood ? const Color(0xFFD81B60) : const Color(0xFF1E293B);
+    // Background color for avatar
+    final avatarColor = AppUtils.getAvatarColor(expense.category);
 
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+        padding: AppPadding.itemSymmetric,
         child: Row(
           children: [
             CircleAvatar(
-              radius: 24,
+              radius: AppConstants.listItemAvatarRadius,
               backgroundColor: avatarColor,
               child: Text(
                 initial,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 18.spMin,
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            16.horizontalSpace,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     expense.title,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.spMin,
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  4.verticalSpace,
                   Text(
                     timeText,
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.spMin,
                       fontWeight: FontWeight.w500,
                       color: Colors.black54,
                     ),
@@ -80,17 +77,17 @@ class ExpenseListItem extends StatelessWidget {
               children: [
                 Text(
                   amountText,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.spMin,
                     fontWeight: FontWeight.w700,
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 4),
+                4.verticalSpace,
                 Text(
                   expense.category,
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.spMin,
                     fontWeight: FontWeight.w500,
                     color: Colors.black54,
                   ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pebblexpense/core/constants/app_padding.dart';
+import 'package:pebblexpense/core/constants/app_strings.dart';
 import 'package:pebblexpense/widgets/expense_list_item.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
 
@@ -17,11 +20,11 @@ class TransactionList extends ConsumerWidget {
     return state.when(
       data: (expenses) {
         if (expenses.isEmpty) {
-          return const SliverToBoxAdapter(
+          return SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(32.0),
-              child: Center(
-                child: Text('No transactions yet.', style: TextStyle(color: Colors.black54)),
+              padding: AppPadding.cardInner,
+              child: const Center(
+                child: Text(AppStrings.noTransactionsYet, style: TextStyle(color: Colors.black54)),
               ),
             ),
           );
@@ -34,12 +37,12 @@ class TransactionList extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    Padding(
+                      padding: AppPadding.listHeader,
                       child: Text(
-                        'TODAY',
+                        AppStrings.today,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.spMin,
                           fontWeight: FontWeight.bold,
                           color: Colors.black54,
                         ),
@@ -62,24 +65,24 @@ class TransactionList extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const SliverToBoxAdapter(
+      loading: () => SliverToBoxAdapter(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(32.0),
-            child: CircularProgressIndicator(),
+            padding: AppPadding.cardInner,
+            child: const CircularProgressIndicator(),
           ),
         ),
       ),
       error: (e, st) => SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: AppPadding.cardInner,
           child: Column(
             children: [
-              Text('Error: $e', textAlign: TextAlign.center),
-              const SizedBox(height: 16),
+              Text('${AppStrings.errorPrefix}$e', textAlign: TextAlign.center),
+              16.verticalSpace,
               ElevatedButton(
                 onPressed: () => ref.read(expenseListProvider.notifier).build(),
-                child: const Text('Retry'),
+                child: const Text(AppStrings.retry),
               ),
             ],
           ),

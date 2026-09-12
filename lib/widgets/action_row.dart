@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pebblexpense/core/constants/app_constants.dart';
+import 'package:pebblexpense/core/constants/app_strings.dart';
 
 class ActionRow extends StatelessWidget {
   const ActionRow({super.key});
@@ -7,29 +10,29 @@ class ActionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ActionButton(
             icon: Icons.arrow_outward,
-            label: 'Add Expense',
+            label: AppStrings.addExpense,
             isPrimary: true,
             onTap: () => context.push('/add'),
           ),
           ActionButton(
             icon: Icons.south_west,
-            label: 'Request',
+            label: AppStrings.request,
             onTap: () {},
           ),
           ActionButton(
             icon: Icons.swap_horiz,
-            label: 'Exchange',
+            label: AppStrings.exchange,
             onTap: () {},
           ),
           ActionButton(
             icon: Icons.more_horiz,
-            label: 'More',
+            label: AppStrings.more,
             onTap: () {},
           ),
         ],
@@ -61,16 +64,16 @@ class ActionButton extends StatelessWidget {
         GestureDetector(
           onTap: onTap,
           child: CircleAvatar(
-            radius: 28,
+            radius: AppConstants.actionAvatarRadius,
             backgroundColor: bgColor,
-            child: Icon(icon, color: Colors.black, size: 24),
+            child: Icon(icon, color: Colors.black, size: 24.spMin),
           ),
         ),
-        const SizedBox(height: 8),
+        8.verticalSpace,
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
+          style: TextStyle(
+            fontSize: 12.spMin,
             fontWeight: FontWeight.w600,
           ),
         ),

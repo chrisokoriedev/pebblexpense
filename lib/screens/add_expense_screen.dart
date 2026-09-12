@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pebblexpense/core/constants/app_constants.dart';
+import 'package:pebblexpense/core/constants/app_padding.dart';
+import 'package:pebblexpense/core/constants/app_strings.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
+import 'package:pebblexpense/widgets/custom_numpad.dart';
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
   const AddExpenseScreen({super.key});
@@ -13,8 +18,7 @@ class AddExpenseScreen extends ConsumerStatefulWidget {
 class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   String _amountStr = '0';
   final _titleController = TextEditingController();
-  String _selectedCategory = 'Other';
-  final List<String> _categories = ['Food', 'Transport', 'Bills', 'Other'];
+  String _selectedCategory = AppConstants.defaultCategory;
   bool _isSubmitting = false;
 
   @override
@@ -64,7 +68,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a title')),
+        const SnackBar(content: Text(AppStrings.pleaseEnterTitle)),
       );
       return;
     }
@@ -72,7 +76,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final amountNgn = double.tryParse(_amountStr) ?? 0.0;
     if (amountNgn <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+        const SnackBar(content: Text(AppStrings.pleaseEnterValidAmount)),
       );
       return;
     }
@@ -93,13 +97,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Expense added')),
+          const SnackBar(content: Text(AppStrings.expenseAdded)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add expense: $e')),
+          SnackBar(content: Text('${AppStrings.failedToAddExpense}$e')),
         );
         setState(() {
           _isSubmitting = false;
@@ -126,53 +130,53 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
+                    20.verticalSpace,
                     // Title Input
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      padding: AppPadding.inputSymmetric,
                       child: TextField(
                         controller: _titleController,
                         textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          hintText: 'Expense Title',
+                        decoration: InputDecoration(
+                          hintText: AppStrings.expenseTitle,
                           border: InputBorder.none,
-                          hintStyle: TextStyle(fontSize: 20, color: Colors.black38),
+                          hintStyle: TextStyle(fontSize: 20.spMin, color: Colors.black38),
                         ),
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 20.spMin, fontWeight: FontWeight.bold),
                       ),
                     ),
                     
                     // Amount Display
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      padding: EdgeInsets.symmetric(vertical: 24.h),
                       child: Text(
                         '₦$_amountStr',
-                        style: const TextStyle(
-                          fontSize: 56,
+                        style: TextStyle(
+                          fontSize: 56.spMin,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -2,
                         ),
                       ),
                     ),
                     
-                    const Text(
-                      'Enter amount',
-                      style: TextStyle(color: Colors.black54, fontSize: 16),
+                    Text(
+                      AppStrings.enterAmount,
+                      style: TextStyle(color: Colors.black54, fontSize: 16.spMin),
                     ),
-                    const SizedBox(height: 24),
+                    24.verticalSpace,
                     
                     // Category selector
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: AppPadding.smallSymmetric,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF9F9F9),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppConstants.containerRadius),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedCategory,
-                          icon: const Icon(Icons.keyboard_arrow_down, size: 16),
-                          items: _categories.map((category) {
+                          icon: Icon(Icons.keyboard_arrow_down, size: 16.w),
+                          items: AppConstants.categories.map((category) {
                             return DropdownMenuItem(
                               value: category,
                               child: Text(category, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -188,20 +192,22 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    32.verticalSpace,
                     
                     // Quick chips
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: AppPadding.pageHorizontal,
                       child: Row(
-                        children: [500, 1000, 5000, 10000, 15000].map((amount) {
+                        children: AppConstants.quickAmounts.map((amount) {
                           return Padding(
-                            padding: const EdgeInsets.only(right: 12),
+                            padding: EdgeInsets.only(right: 12.w),
                             child: ActionChip(
                               label: Text('₦$amount'),
                               backgroundColor: const Color(0xFFF9F9F9),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppConstants.containerRadius),
+                              ),
                               side: BorderSide.none,
                               onPressed: () => _addQuickAmount(amount),
                             ),
@@ -215,87 +221,24 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
             ),
             
             // Numpad
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              child: Column(
-                children: [
-                  _NumpadRow(['1', '2', '3'], _onNumpadTap),
-                  const SizedBox(height: 16),
-                  _NumpadRow(['4', '5', '6'], _onNumpadTap),
-                  const SizedBox(height: 16),
-                  _NumpadRow(['7', '8', '9'], _onNumpadTap),
-                  const SizedBox(height: 16),
-                  _NumpadRow(['.', '0', 'backspace'], _onNumpadTap),
-                ],
-              ),
-            ),
+            CustomNumpad(onTap: _onNumpadTap),
             
             // Submit Button
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: AppPadding.pageAll,
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 56.h,
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submit,
                   child: _isSubmitting 
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text('Save Expense', style: TextStyle(fontSize: 18)),
+                      : Text(AppStrings.saveExpense, style: TextStyle(fontSize: 18.spMin)),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _NumpadRow extends StatelessWidget {
-  final List<String> keys;
-  final Function(String) onTap;
-
-  const _NumpadRow(this.keys, this.onTap);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: keys.map((k) {
-        return _NumpadKey(k, onTap);
-      }).toList(),
-    );
-  }
-}
-
-class _NumpadKey extends StatelessWidget {
-  final String keyString;
-  final Function(String) onTap;
-
-  const _NumpadKey(this.keyString, this.onTap);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onTap(keyString),
-      child: Container(
-        width: 80,
-        height: 60,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9F9F9),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        alignment: Alignment.center,
-        child: keyString == 'backspace'
-            ? const Icon(Icons.backspace_outlined, size: 24, color: Colors.black87)
-            : Text(
-                keyString,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
       ),
     );
   }

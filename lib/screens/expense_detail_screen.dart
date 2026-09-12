@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:pebblexpense/core/constants/app_padding.dart';
+import 'package:pebblexpense/core/constants/app_strings.dart';
+import 'package:pebblexpense/core/utils.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
+import 'package:pebblexpense/widgets/detail_row.dart';
 
 class ExpenseDetailScreen extends ConsumerWidget {
   final String expenseId;
@@ -20,22 +24,17 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
     if (expense == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Expense Details')),
-        body: const Center(child: Text('Expense not found')),
+        appBar: AppBar(title: const Text(AppStrings.expenseDetails)),
+        body: const Center(child: Text(AppStrings.expenseNotFound)),
       );
     }
 
-    final formatCurrency = NumberFormat.currency(
-      locale: 'en_NG',
-      symbol: '₦',
-      decimalDigits: 2,
-    );
-    final amountText = formatCurrency.format(expense.amountKobo / 100);
-    final dateText = DateFormat.yMMMMd().add_jm().format(expense.createdAt.toLocal());
+    final amountText = AppUtils.formatCurrency(expense.amountKobo);
+    final dateText = AppUtils.formatDateWithTime(expense.createdAt);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expense Details'),
+        title: const Text(AppStrings.expenseDetails),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.redAccent),
@@ -44,13 +43,13 @@ class ExpenseDetailScreen extends ConsumerWidget {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: AppPadding.cardInner,
                 child: Column(
                   children: [
                     Text(
@@ -60,7 +59,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                             letterSpacing: -1.5,
                           ),
                     ),
-                    const SizedBox(height: 8),
+                    8.verticalSpace,
                     Text(
                       expense.title,
                       style: Theme.of(context).textTheme.titleLarge,
@@ -70,22 +69,22 @@ class ExpenseDetailScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            _DetailRow(
+            24.verticalSpace,
+            DetailRow(
               icon: Icons.category,
-              label: 'Category',
+              label: AppStrings.category,
               value: expense.category,
             ),
             const Divider(),
-            _DetailRow(
+            DetailRow(
               icon: Icons.calendar_today,
-              label: 'Date',
+              label: AppStrings.date,
               value: dateText,
             ),
             const Divider(),
-            _DetailRow(
+            DetailRow(
               icon: Icons.fingerprint,
-              label: 'ID',
+              label: AppStrings.id,
               value: expense.id,
             ),
           ],
@@ -98,12 +97,12 @@ class ExpenseDetailScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Expense?'),
-        content: const Text('This action cannot be undone.'),
+        title: const Text(AppStrings.deleteExpenseTitle),
+        content: const Text(AppStrings.deleteExpenseContent),
         actions: [
           TextButton(
             onPressed: () => context.pop(false),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.black)),
+            child: const Text(AppStrings.cancel, style: TextStyle(color: Colors.black)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -111,7 +110,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () => context.pop(true),
-            child: const Text('DELETE'),
+            child: const Text(AppStrings.delete),
           ),
         ],
       ),
@@ -123,54 +122,16 @@ class ExpenseDetailScreen extends ConsumerWidget {
         if (context.mounted) {
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Expense deleted')),
+            const SnackBar(content: Text(AppStrings.expenseDeleted)),
           );
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete: $e')),
+            SnackBar(content: Text('${AppStrings.failedToDelete}$e')),
           );
         }
       }
     }
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.black54),
-          const SizedBox(width: 16),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.black54,
-                ),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ],
-      ),
-    );
   }
 }

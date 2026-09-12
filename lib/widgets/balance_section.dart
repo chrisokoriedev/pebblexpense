@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pebblexpense/core/constants/app_constants.dart';
+import 'package:pebblexpense/core/constants/app_padding.dart';
+import 'package:pebblexpense/core/constants/app_strings.dart';
+import 'package:pebblexpense/core/utils.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
 
 class BalanceSection extends ConsumerWidget {
@@ -9,67 +13,62 @@ class BalanceSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final totalAmountKobo = ref.watch(totalExpensesProvider);
-    final formatCurrency = NumberFormat.currency(
-      locale: 'en_NG',
-      symbol: '₦',
-      decimalDigits: 2,
-    );
-    final totalText = formatCurrency.format(totalAmountKobo / 100);
+    final totalText = AppUtils.formatCurrency(totalAmountKobo);
 
     return Column(
       children: [
-        const SizedBox(height: 16),
+        16.verticalSpace,
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: AppPadding.smallSymmetric,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppConstants.containerRadius),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 24,
-                height: 16,
+                width: 24.w,
+                height: 16.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFCEF175),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                 ),
               ),
-              const SizedBox(width: 8),
-              const Text('**** 3425'),
-              const SizedBox(width: 4),
-              const Icon(Icons.keyboard_arrow_down, size: 16),
+              8.horizontalSpace,
+              Text(AppStrings.obscuredCard, style: TextStyle(fontSize: 14.spMin)),
+              4.horizontalSpace,
+              Icon(Icons.keyboard_arrow_down, size: 16.spMin),
             ],
           ),
         ),
-        const SizedBox(height: 24),
-        const Text(
-          'Your Balance',
-          style: TextStyle(color: Colors.black54, fontSize: 14),
+        24.verticalSpace,
+        Text(
+          AppStrings.yourBalance,
+          style: TextStyle(color: Colors.black54, fontSize: 14.spMin),
         ),
-        const SizedBox(height: 8),
+        8.verticalSpace,
         Text(
           totalText,
           style: Theme.of(context).textTheme.displayMedium,
         ),
-        const SizedBox(height: 12),
+        12.verticalSpace,
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: AppPadding.smallSymmetric,
           decoration: BoxDecoration(
             color: const Color(0xFFF0F0FF), // Light purple hint
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppConstants.containerRadius),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.savings, size: 14, color: Color(0xFF7B61FF)),
-              SizedBox(width: 6),
+              Icon(Icons.savings, size: 14.spMin, color: const Color(0xFF7B61FF)),
+              6.horizontalSpace,
               Text(
-                'You saved ₦2,900 in last Month >',
+                AppStrings.savedLastMonth,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF7B61FF),
+                  fontSize: 12.spMin,
+                  color: const Color(0xFF7B61FF),
                   fontWeight: FontWeight.w600,
                 ),
               ),
