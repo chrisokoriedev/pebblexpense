@@ -16,7 +16,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Find the specific expense from the list
     final expensesState = ref.watch(expenseListProvider);
-    final expense = expensesState.valueOrNull?.where((e) => e.id == expenseId).firstOrNull;
+    final expense = expensesState.value?.where((e) => e.id == expenseId).firstOrNull;
 
     if (expense == null) {
       return Scaffold(

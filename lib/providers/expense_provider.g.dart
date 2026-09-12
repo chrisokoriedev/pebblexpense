@@ -48,7 +48,7 @@ final class ApiClientProvider
   }
 }
 
-String _$apiClientHash() => r'830b3339c24d952121db45e5d7278545d0d2fbfd';
+String _$apiClientHash() => r'a0eb8837fc3cfc2ac414f9bdd23761e2186e929e';
 
 @ProviderFor(ExpenseList)
 final expenseListProvider = ExpenseListProvider._();
@@ -132,4 +132,4 @@ final class TotalExpensesProvider extends $FunctionalProvider<int, int, int>
   }
 }
 
-String _$totalExpensesHash() => r'9aac467402d95912c23f8a73bb8c838fe0b69a29';
+String _$totalExpensesHash() => r'f07e42e4c9e4ac09f895608a63fb8eda0951a181';

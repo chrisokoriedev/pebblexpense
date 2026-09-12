@@ -40,7 +40,7 @@ class ExpenseList extends _$ExpenseList {
       final response = await client.post('/expenses', newExpenseData);
       final newExpense = Expense.fromJson(response);
       
-      final currentList = state.valueOrNull ?? [];
+      final currentList = state.value ?? [];
       state = AsyncValue.data([newExpense, ...currentList]);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -50,7 +50,7 @@ class ExpenseList extends _$ExpenseList {
   Future<void> deleteExpense(String id) async {
     final client = ref.read(apiClientProvider);
     
-    final currentList = state.valueOrNull ?? [];
+    final currentList = state.value ?? [];
     
     state = AsyncValue.data(currentList.where((e) => e.id != id).toList());
 
@@ -65,6 +65,6 @@ class ExpenseList extends _$ExpenseList {
 
 @riverpod
 int totalExpenses(Ref ref) { // Using Ref here as well just in case.
-  final expenses = ref.watch(expenseListProvider).valueOrNull ?? [];
+  final expenses = ref.watch(expenseListProvider).value ?? [];
   return expenses.fold(0, (sum, expense) => sum + expense.amountKobo);
 }
