@@ -17,17 +17,16 @@ class ExpenseListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Format amount to Naira (NGN) without symbol, since we prepend it
+    // Format amount with currency symbol
     final amountText = '-${AppUtils.formatCurrency(expense.amountKobo)}';
 
     // Format date/time
-    final timeText = AppUtils.formatTime(expense.createdAt);
+    final timeText = AppUtils.formatDateWithTime(expense.createdAt);
 
-    // Generate initial for avatar
-    final initial = AppUtils.getInitials(expense.title);
-
-    // Background color for avatar
+    // Get emoji and background color for avatar
+    final emoji = AppUtils.getCategoryEmoji(expense.category);
     final avatarColor = AppUtils.getAvatarColor(expense.category);
+    final categoryName = expense.category ?? 'Other';
 
     return InkWell(
       onTap: onTap,
@@ -39,11 +38,9 @@ class ExpenseListItem extends StatelessWidget {
               radius: AppConstants.listItemAvatarRadius,
               backgroundColor: avatarColor,
               child: Text(
-                initial,
+                emoji,
                 style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.spMin,
+                  fontSize: 22.spMin,
                 ),
               ),
             ),
@@ -66,7 +63,7 @@ class ExpenseListItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.spMin,
                       fontWeight: FontWeight.w500,
-                      color: Colors.black54,
+                      color: Colors.black45,
                     ),
                   ),
                 ],
@@ -85,7 +82,7 @@ class ExpenseListItem extends StatelessWidget {
                 ),
                 4.verticalSpace,
                 Text(
-                  expense.category ?? 'Other',
+                  categoryName,
                   style: TextStyle(
                     fontSize: 12.spMin,
                     fontWeight: FontWeight.w500,

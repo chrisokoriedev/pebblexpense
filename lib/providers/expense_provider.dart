@@ -15,7 +15,7 @@ class ExpenseList extends _$ExpenseList {
   Future<List<Expense>> build() async {
     final client = ref.read(apiClientProvider);
     final response = await client.get('/api/${client.bucket}/expenses');
-    
+
     final List list;
     if (response is Map<String, dynamic> && response.containsKey('expenses')) {
       list = response['expenses'] as List;
@@ -25,7 +25,9 @@ class ExpenseList extends _$ExpenseList {
       list = [];
     }
 
-    final expenses = list.map((e) => Expense.fromJson(e as Map<String, dynamic>)).toList();
+    final expenses = list
+        .map((e) => Expense.fromJson(e as Map<String, dynamic>))
+        .toList();
     expenses.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return expenses;
   }
@@ -36,7 +38,7 @@ class ExpenseList extends _$ExpenseList {
     String? category,
   }) async {
     final client = ref.read(apiClientProvider);
-    
+
     final payload = <String, dynamic>{
       'title': title,
       'amountKobo': amountKobo,
@@ -44,17 +46,20 @@ class ExpenseList extends _$ExpenseList {
     };
 
     final currentList = state.value ?? [];
-    
-    final response = await client.post('/api/${client.bucket}/expenses', payload);
+
+    final response = await client.post(
+      '/api/${client.bucket}/expenses',
+      payload,
+    );
     final newExpense = Expense.fromJson(response as Map<String, dynamic>);
-    
+
     state = AsyncValue.data([newExpense, ...currentList]);
   }
 
   Future<void> deleteExpense(String id) async {
     final client = ref.read(apiClientProvider);
     final currentList = state.value ?? [];
-    
+
     state = AsyncValue.data(currentList.where((e) => e.id != id).toList());
 
     try {

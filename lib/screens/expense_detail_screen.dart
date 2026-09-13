@@ -85,9 +85,9 @@ class ExpenseDetailScreen extends ConsumerWidget {
             ),
             24.verticalSpace,
             DetailRow(
-              icon: Icons.category,
+              icon: Icons.category_rounded,
               label: AppStrings.category,
-              value: expense.category ?? 'Other',
+              value: '${AppUtils.getCategoryEmoji(expense.category)} ${expense.category ?? "Other"}',
             ),
             const Divider(),
             DetailRow(
