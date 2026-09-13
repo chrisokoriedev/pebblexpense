@@ -15,12 +15,16 @@ abstract class IExpenseRepository {
 class ExpenseRepository implements IExpenseRepository {
   final ApiClient _apiClient;
 
-  ExpenseRepository({required this._apiClient}) ;
+  ExpenseRepository({required this._apiClient});
 
   @override
   Future<List<Expense>> getExpenses() async {
-    final response = await _apiClient.get(ApiEndpoints.expenses(_apiClient.bucket));
-    final expensesResponse = ExpensesResponse.fromJson(response as Map<String, dynamic>);
+    final response = await _apiClient.get(
+      ApiEndpoints.expenses(_apiClient.bucket),
+    );
+    final expensesResponse = ExpensesResponse.fromJson(
+      response as Map<String, dynamic>,
+    );
     final expenses = List<Expense>.from(expensesResponse.expenses);
     expenses.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return expenses;
@@ -28,7 +32,9 @@ class ExpenseRepository implements IExpenseRepository {
 
   @override
   Future<Expense> getExpenseById(String id) async {
-    final response = await _apiClient.get(ApiEndpoints.expenseById(_apiClient.bucket, id));
+    final response = await _apiClient.get(
+      ApiEndpoints.expenseById(_apiClient.bucket, id),
+    );
     return Expense.fromJson(response as Map<String, dynamic>);
   }
 

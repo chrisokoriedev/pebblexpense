@@ -100,7 +100,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     try {
       final amountKobo = (amountNgn * 100).round();
 
-      await ref.read(expenseListProvider.notifier).addExpense(
+      await ref
+          .read(expenseListProvider.notifier)
+          .addExpense(
             title: title,
             amountKobo: amountKobo,
             category: _selectedCategory,
@@ -108,9 +110,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
       if (mounted) {
         context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.expenseAdded)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text(AppStrings.expenseAdded)));
       }
     } catch (e) {
       if (mounted) {
@@ -161,9 +163,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
                     // Title Input with suffix check icon
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 6.h,
+                      ),
                       decoration: BoxDecoration(
-                        color: isEditingTitle ? const Color(0xFFF9F9F9) : Colors.transparent,
+                        color: isEditingTitle
+                            ? const Color(0xFFF9F9F9)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Column(
@@ -177,7 +184,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                   controller: _titleController,
                                   focusNode: _titleFocusNode,
                                   textAlign: TextAlign.center,
-                                  cursorColor: const Color(0xFFE53935), // Red/coral cursor
+                                  cursorColor: const Color(
+                                    0xFFE53935,
+                                  ), // Red/coral cursor
                                   cursorWidth: 2.5,
                                   cursorRadius: const Radius.circular(2),
                                   textInputAction: TextInputAction.done,
@@ -201,7 +210,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                               if (isEditingTitle)
                                 IconButton(
                                   padding: EdgeInsets.zero,
-                                  constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.h),
+                                  constraints: BoxConstraints(
+                                    minWidth: 36.w,
+                                    minHeight: 36.h,
+                                  ),
                                   icon: Container(
                                     padding: EdgeInsets.all(5.w),
                                     decoration: const BoxDecoration(
@@ -225,7 +237,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                             width: 140.w,
                             decoration: BoxDecoration(
                               color: isEditingTitle
-                                  ? const Color(0xFFE53935) // Active red underscore
+                                  ? const Color(
+                                      0xFFE53935,
+                                    ) // Active red underscore
                                   : Colors.black12,
                               borderRadius: BorderRadius.circular(2.r),
                             ),
@@ -284,82 +298,88 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       ),
                     ),
                     10.verticalSpace,
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: AppConstants.categories.map((category) {
-                          final isSelected = _selectedCategory == category;
-                          final emoji = AppUtils.getCategoryEmoji(category);
-                          final accentColor = AppUtils.getCategoryAccentColor(category);
+                    // Category Selector with Obvious Emojis (using Wrap)
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: AppConstants.categories.map((category) {
+                        final isSelected = _selectedCategory == category;
+                        final emoji = AppUtils.getCategoryEmoji(category);
+                        final accentColor = AppUtils.getCategoryAccentColor(
+                          category,
+                        );
 
-                          return Padding(
-                            padding: EdgeInsets.only(right: 10.w),
-                            child: ChoiceChip(
-                              label: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(emoji, style: TextStyle(fontSize: 16.spMin)),
-                                  6.horizontalSpace,
-                                  Text(
-                                    category,
-                                    style: TextStyle(
-                                      fontSize: 13.spMin,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                      color: isSelected ? Colors.white : Colors.black87,
-                                    ),
-                                  ),
-                                ],
+                        return ChoiceChip(
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(emoji, style: TextStyle(fontSize: 16.spMin)),
+                              6.horizontalSpace,
+                              Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 13.spMin,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
                               ),
-                              selected: isSelected,
-                              selectedColor: accentColor,
-                              backgroundColor: const Color(0xFFF5F5F5),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppConstants.containerRadius),
-                              ),
-                              side: BorderSide.none,
-                              showCheckmark: false,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() {
-                                    _selectedCategory = category;
-                                  });
-                                }
-                              },
+                            ],
+                          ),
+                          selected: isSelected,
+                          selectedColor: accentColor,
+                          backgroundColor: const Color(0xFFF5F5F5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.containerRadius,
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                          side: BorderSide.none,
+                          showCheckmark: false,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                _selectedCategory = category;
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
                     ),
 
                     20.verticalSpace,
 
-                    // Quick amounts
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: AppConstants.quickAmounts.map((amount) {
-                          final formattedQuick = AppUtils.formatInputAmount(amount.toString());
-                          return Padding(
-                            padding: EdgeInsets.only(right: 10.w),
-                            child: ActionChip(
-                              label: Text(
-                                '+₦$formattedQuick',
-                                style: TextStyle(
-                                  fontSize: 13.spMin,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              backgroundColor: const Color(0xFFF5F5F5),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppConstants.containerRadius),
-                              ),
-                              side: BorderSide.none,
-                              onPressed: () => _addQuickAmount(amount),
+                    // Quick amounts with Wrap
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      alignment: WrapAlignment.center,
+                      children: AppConstants.quickAmounts.map((amount) {
+                        final formattedQuick = AppUtils.formatInputAmount(
+                          amount.toString(),
+                        );
+                        return ActionChip(
+                          label: Text(
+                            '+₦$formattedQuick',
+                            style: TextStyle(
+                              fontSize: 13.spMin,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                          backgroundColor: const Color(0xFFF5F5F5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.containerRadius,
+                            ),
+                          ),
+                          side: BorderSide.none,
+                          onPressed: () => _addQuickAmount(amount),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
@@ -367,8 +387,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
             ),
 
             // Fixed Position: Numpad is shown when not editing title
-            if (!isEditingTitle)
-              CustomNumpad(onTap: _onNumpadTap),
+            if (!isEditingTitle) CustomNumpad(onTap: _onNumpadTap),
 
             // Submit Button
             Padding(
@@ -381,7 +400,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.buttonRadius,
+                      ),
                     ),
                   ),
                   onPressed: _isSubmitting ? null : _submit,

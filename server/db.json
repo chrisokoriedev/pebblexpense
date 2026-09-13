@@ -128,6 +128,36 @@
         "category": "Bills",
         "createdAt": "2026-09-13T16:21:33.904Z"
       }
+    ],
+    "test_1789332369162": [
+      {
+        "id": "exp_2847d846",
+        "title": "Miscellaneous",
+        "amountKobo": 5000,
+        "category": null,
+        "createdAt": "2026-09-13T20:46:09.257Z"
+      },
+      {
+        "id": "exp_8be95422",
+        "title": "Bolt to office",
+        "amountKobo": 320000,
+        "category": "Transport",
+        "createdAt": "2026-09-11T20:46:09.189Z"
+      },
+      {
+        "id": "exp_210d04b4",
+        "title": "Groceries",
+        "amountKobo": 1255050,
+        "category": "Food",
+        "createdAt": "2026-09-12T20:46:09.189Z"
+      },
+      {
+        "id": "exp_b614db05",
+        "title": "Internet Subscription",
+        "amountKobo": 2500000,
+        "category": "Bills",
+        "createdAt": "2026-09-13T16:46:09.189Z"
+      }
     ]
   }
 }
