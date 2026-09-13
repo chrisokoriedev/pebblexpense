@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pebblexpense/core/constants/app_padding.dart';
 import 'package:pebblexpense/core/constants/app_strings.dart';
-import 'package:pebblexpense/core/utils.dart';
 import 'package:pebblexpense/models/expense.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
-import 'package:pebblexpense/widgets/detail_row.dart';
+import 'package:pebblexpense/widgets/delete_expense_modal.dart';
+import 'package:pebblexpense/widgets/expense_detail_hero_card.dart';
+import 'package:pebblexpense/widgets/expense_info_card.dart';
 
 class ExpenseDetailScreen extends ConsumerWidget {
   final String expenseId;
@@ -32,103 +32,108 @@ class ExpenseDetailScreen extends ConsumerWidget {
     return detailAsync.when(
       data: (fetchedExpense) => _buildScaffold(context, ref, fetchedExpense),
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.expenseDetails)),
+        backgroundColor: const Color(0xFFF9F9F9),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF9F9F9),
+          elevation: 0,
+          title: const Text('Expense Details', style: TextStyle(color: Colors.black)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+            onPressed: () => context.pop(),
+          ),
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.expenseDetails)),
-        body: const Center(child: Text(AppStrings.expenseNotFound)),
+        backgroundColor: const Color(0xFFF9F9F9),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF9F9F9),
+          elevation: 0,
+          title: const Text('Expense Details', style: TextStyle(color: Colors.black)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppStrings.expenseNotFound,
+                style: TextStyle(fontSize: 16.spMin, color: Colors.black54),
+              ),
+              12.verticalSpace,
+              ElevatedButton(
+                onPressed: () => context.pop(),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildScaffold(BuildContext context, WidgetRef ref, Expense expense) {
-    final amountText = AppUtils.formatCurrency(expense.amountKobo);
-    final dateText = AppUtils.formatDateWithTime(expense.createdAt);
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        title: const Text(AppStrings.expenseDetails),
+        backgroundColor: const Color(0xFFF9F9F9),
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'Expense Details',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18.spMin,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.redAccent),
-            onPressed: () => _confirmDelete(context, ref),
+          Padding(
+            padding: EdgeInsets.only(right: 12.w),
+            child: IconButton(
+              icon: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFEBEE), // Soft red
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.delete_outline_rounded,
+                  color: const Color(0xFFE53935),
+                  size: 20.spMin,
+                ),
+              ),
+              onPressed: () => _handleDelete(context, ref),
+            ),
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              child: Padding(
-                padding: AppPadding.cardInner,
-                child: Column(
-                  children: [
-                    Text(
-                      amountText,
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -1.5,
-                          ),
-                    ),
-                    8.verticalSpace,
-                    Text(
-                      expense.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            24.verticalSpace,
-            DetailRow(
-              icon: Icons.category_rounded,
-              label: AppStrings.category,
-              value: '${AppUtils.getCategoryEmoji(expense.category)} ${expense.category ?? "Other"}',
-            ),
-            const Divider(),
-            DetailRow(
-              icon: Icons.calendar_today,
-              label: AppStrings.date,
-              value: dateText,
-            ),
-            const Divider(),
-            DetailRow(
-              icon: Icons.fingerprint,
-              label: AppStrings.id,
-              value: expense.id,
-            ),
+            // Modular Hero Card Widget
+            ExpenseDetailHeroCard(expense: expense),
+
+            20.verticalSpace,
+
+            // Modular Info Card Widget
+            ExpenseInfoCard(expense: expense),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(AppStrings.deleteExpenseTitle),
-        content: const Text(AppStrings.deleteExpenseContent),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(false),
-            child: const Text(AppStrings.cancel, style: TextStyle(color: Colors.black)),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () => context.pop(true),
-            child: const Text(AppStrings.delete),
-          ),
-        ],
-      ),
-    );
+  Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await DeleteExpenseModal.show(context);
 
     if (confirmed == true && context.mounted) {
       try {
