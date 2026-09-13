@@ -25,19 +25,19 @@ class PulseBottomNavBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
         ],
       ),
-      padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: SafeArea(
         top: false,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Home Tab
+            // 1. Home Tab (index 0)
             _NavBarButton(
               icon: Icons.home_rounded,
               label: 'Home',
@@ -45,37 +45,53 @@ class PulseBottomNavBar extends StatelessWidget {
               onTap: () => onTabSelected(0),
             ),
 
-            // Center Floating Add Button
+            // 2. Insights Tab (index 1)
+            _NavBarButton(
+              icon: Icons.bar_chart_rounded,
+              label: 'Insights',
+              isActive: currentIndex == 1,
+              onTap: () => onTabSelected(1),
+            ),
+
+            // 3. Center Floating Add Button
             GestureDetector(
               onTap: onAddTap,
               child: Container(
-                width: 56.w,
-                height: 56.h,
+                width: 48.w,
+                height: 48.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFCEF175), // Vibrant Lime
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFCEF175).withValues(alpha: 0.5),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
+                      color: const Color(0xFFCEF175).withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
                 child: Icon(
                   Icons.add_rounded,
                   color: Colors.black,
-                  size: 30.spMin,
+                  size: 26.spMin,
                 ),
               ),
             ),
 
-            // Stats Tab
+            // 4. Categories Tab (index 2)
             _NavBarButton(
-              icon: Icons.insights_rounded,
-              label: 'Stats',
-              isActive: currentIndex == 1,
-              onTap: () => onTabSelected(1),
+              icon: Icons.pie_chart_outline_rounded,
+              label: 'Categories',
+              isActive: currentIndex == 2,
+              onTap: () => onTabSelected(2),
+            ),
+
+            // 5. Transactions Tab (index 3)
+            _NavBarButton(
+              icon: Icons.receipt_long_rounded,
+              label: 'Expenses',
+              isActive: currentIndex == 3,
+              onTap: () => onTabSelected(3),
             ),
           ],
         ),
@@ -103,20 +119,20 @@ class _NavBarButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
               color: isActive ? Colors.black : Colors.black38,
-              size: 26.spMin,
+              size: 22.spMin,
             ),
-            4.verticalSpace,
+            3.verticalSpace,
             Text(
               label,
               style: TextStyle(
-                fontSize: 12.spMin,
+                fontSize: 10.spMin,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 color: isActive ? Colors.black : Colors.black38,
               ),

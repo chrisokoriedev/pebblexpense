@@ -27,6 +27,13 @@ class AppConstants {
     'Other': Color(0xFF7E57C2),
   };
 
+  static const Map<String, Color> categoryChartColors = {
+    'Food': Color(0xFFF5A623), // Vibrant amber/yellow matching reference screenshot
+    'Transport': Color(0xFFEE6352), // Coral / salmon orange
+    'Bills': Color(0xFF6A60E3), // Indigo / purple
+    'Other': Color(0xFF4EA5F5), // Vibrant sky blue
+  };
+
   static double get cardRadius => 24.r;
   static double get buttonRadius => 100.r;
   static double get containerRadius => 16.r;

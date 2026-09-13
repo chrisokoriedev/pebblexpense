@@ -32,7 +32,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
           children: [
             // Tab 0: Home Expense List
             RefreshIndicator(
-              onRefresh: () => ref.read(expenseListProvider.notifier).build(),
+              onRefresh: () => ref.read(expenseListProvider.notifier).refresh(),
               child: CustomScrollView(
                 slivers: [
                   const SliverToBoxAdapter(child: TopHeader()),

@@ -81,7 +81,7 @@ class TransactionList extends ConsumerWidget {
               Text('${AppStrings.errorPrefix}$e', textAlign: TextAlign.center),
               16.verticalSpace,
               ElevatedButton(
-                onPressed: () => ref.read(expenseListProvider.notifier).build(),
+                onPressed: () => ref.read(expenseListProvider.notifier).refresh(),
                 child: const Text(AppStrings.retry),
               ),
             ],

@@ -44,6 +44,12 @@ class ExpenseList extends _$ExpenseList {
       rethrow;
     }
   }
+
+  Future<void> refresh() async {
+    final repository = ref.read(expenseRepositoryProvider);
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => repository.getExpenses());
+  }
 }
 
 @riverpod
