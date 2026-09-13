@@ -1,36 +1,70 @@
-# Pulse - Expense Tracker
+# Pulse - Expense Tracker (PebbleScore Take-Home)
 
-Pulse is a simple Flutter expense tracker app that demonstrates state management, network requests, and clean architecture, created as a take-home exercise.
+Pulse is a Flutter expense tracker app featuring clean architecture, Riverpod state management, responsive UI, and full integration with the **PebbleScore Pulse Mock API**.
+
+---
+
+## PebbleScore Pulse API Specification
+
+### Base URL
+- **Local Mock Server:** `http://127.0.0.1:3000` (or `http://10.0.2.2:3000` for Android Emulator)
+- **Live Endpoint:** `https://pebblescore-api.dev.pebblescore.com/api/{bucket}/expenses`
+
+Replace `{bucket}` with any string (e.g. `amaka` or your name) so data remains isolated. A new bucket is created automatically on first call, pre-populated with realistic sample expenses.
+
+### Endpoints
+| Method | Path | Purpose | Success Status |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/{bucket}/expenses` | List all expenses | `200 OK` |
+| `GET` | `/api/{bucket}/expenses/{id}` | Fetch one expense by id | `200 OK` |
+| `POST` | `/api/{bucket}/expenses` | Create an expense (server assigns `id` and `createdAt`) | `201 Created` |
+| `DELETE` | `/api/{bucket}/expenses/{id}` | Delete an expense by id | `204 No Content` |
+
+### Expense Object
+- `id` (`string`): Server-generated short id with `exp_` prefix (e.g. `exp_a1b2c3d4`). Ignored if sent on POST.
+- `title` (`string`): Required, non-empty. Empty titles return `400 Bad Request`.
+- `amountKobo` (`integer`): Required whole number of kobo (`1 NGN = 100 kobo`). Non-integers or negative amounts return `400 Bad Request`.
+- `category` (`string | null`): One of: `Food`, `Transport`, `Bills`, `Other`, or `null`. Invalid non-null values return `400 Bad Request`.
+- `createdAt` (`string`): Server-generated ISO-8601 UTC timestamp. Ignored if sent on POST.
+
+### Optional Request Headers
+- `X-Force-Error: 500`: Forces a single `500 Internal Server Error` `{ "error": "internal error" }`.
+- `X-Delay: <milliseconds>`: Pauses server execution before returning a response.
+
+---
 
 ## Getting Started
 
-### 1. Start the Local API (json-server)
-To ensure the API is always available and doesn't expire (unlike crudcrud.com), a local `json-server` is provided.
-
-Requirements: Node.js (v14+ recommended)
+### 1. Start the Backend Mock Server
+The repository comes with a full Express mock server that implements the PebbleScore specification:
 
 ```bash
 cd server
 npm install
 npm start
 ```
-The mock API will run on `http://localhost:3000`.
+The mock API will be live at `http://localhost:3000`.
+
+To run the automated backend test suite verifying all 27 endpoint test cases:
+```bash
+npm test
+```
 
 ### 2. Run the Flutter App
-Ensure the API is running, then in a new terminal:
+In the project root:
 ```bash
 flutter pub get
 flutter run
 ```
-*Note: The app is currently configured to point to `127.0.0.1:3000` which works on Desktop and Web. If running on an Android emulator, you may need to update `baseUrl` in `lib/core/api_client.dart` to `10.0.2.2:3000`.*
 
-## State Management Choice: Riverpod
-I chose **Riverpod** (specifically `AsyncNotifier`) for state management.
-- **Why?** It perfectly handles asynchronous data streams natively (loading, data, and error states) without writing boilerplate `isLoading` flags.
-- It provides built-in caching, easy pull-to-refresh (`ref.refresh`), and declarative dependency injection, making it highly testable and robust for modern Flutter apps.
+To run the Flutter unit tests:
+```bash
+flutter test
+```
 
-## Trade-offs & Future Improvements
-Given the time constraint (4-6 hours), I made a few intentional trade-offs:
-1. **Simple API Client instead of Dio:** I used the built-in `http` package wrapped in a simple `ApiClient` class to keep dependencies minimal. With more time, I would use `Dio` with interceptors for robust error handling, token injection, and retry logic.
-2. **Basic Error Handling in UI:** The error states and snackbars are functional but could be styled better. A global error handler or a centralized dialog manager would be better for a production app.
-3. **Optimistic Updates without persistence:** When deleting or adding, the UI updates optimistically. However, if the app goes offline, these requests will just fail. With more time, I would implement local persistence (e.g., Hive or SQLite) for an offline-first experience with a sync queue.
+---
+
+## State Management & Architecture
+- **Riverpod (AsyncNotifier):** Manages asynchronous data streams (loading, data, error) declaratively with optimistic caching.
+- **Clean Model Mapping:** Uses Freezed & JSON Serializable for immutable models.
+- **Typed Error Handling:** Extracts `{ "error": "..." }` responses from the API and displays meaningful feedback.

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pebblexpense/core/constants/app_padding.dart';
 import 'package:pebblexpense/core/constants/app_strings.dart';
 import 'package:pebblexpense/core/utils.dart';
+import 'package:pebblexpense/models/expense.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
 import 'package:pebblexpense/widgets/detail_row.dart';
 
@@ -18,17 +19,30 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Find the specific expense from the list
+    // Check if expense is in local list
     final expensesState = ref.watch(expenseListProvider);
     final expense = expensesState.value?.where((e) => e.id == expenseId).firstOrNull;
 
-    if (expense == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.expenseDetails)),
-        body: const Center(child: Text(AppStrings.expenseNotFound)),
-      );
+    if (expense != null) {
+      return _buildScaffold(context, ref, expense);
     }
 
+    // Fallback to fetching directly from API by ID
+    final detailAsync = ref.watch(expenseDetailProvider(expenseId));
+    return detailAsync.when(
+      data: (fetchedExpense) => _buildScaffold(context, ref, fetchedExpense),
+      loading: () => Scaffold(
+        appBar: AppBar(title: const Text(AppStrings.expenseDetails)),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) => Scaffold(
+        appBar: AppBar(title: const Text(AppStrings.expenseDetails)),
+        body: const Center(child: Text(AppStrings.expenseNotFound)),
+      ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, WidgetRef ref, Expense expense) {
     final amountText = AppUtils.formatCurrency(expense.amountKobo);
     final dateText = AppUtils.formatDateWithTime(expense.createdAt);
 
@@ -73,7 +87,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
             DetailRow(
               icon: Icons.category,
               label: AppStrings.category,
-              value: expense.category,
+              value: expense.category ?? 'Other',
             ),
             const Divider(),
             DetailRow(

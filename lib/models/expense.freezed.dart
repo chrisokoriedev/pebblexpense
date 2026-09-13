@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Expense {
 
- String get id; String get title; int get amountKobo; String get category; DateTime get createdAt;
+ String get id; String get title; int get amountKobo; String? get category; DateTime get createdAt;
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -54,7 +54,7 @@ abstract mixin class $ExpenseCopyWith<$Res>  {
   factory $ExpenseCopyWith(Expense value, $Res Function(Expense) _then) = _$ExpenseCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, int amountKobo, String category, DateTime createdAt
+ String id, String title, int amountKobo, String? category, DateTime createdAt
 });
 
 
@@ -71,13 +71,13 @@ class _$ExpenseCopyWithImpl<$Res>
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? amountKobo = null,Object? category = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? amountKobo = null,Object? category = freezed,Object? createdAt = null,}) {
   return _then(Expense(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,amountKobo: null == amountKobo ? _self.amountKobo : amountKobo // ignore: cast_nullable_to_non_nullable
-as int,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as int,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -163,7 +163,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  int amountKobo,  String category,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  int amountKobo,  String? category,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
 return $default(_that.id,_that.title,_that.amountKobo,_that.category,_that.createdAt);case _:
@@ -184,7 +184,7 @@ return $default(_that.id,_that.title,_that.amountKobo,_that.category,_that.creat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  int amountKobo,  String category,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  int amountKobo,  String? category,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _Expense():
 return $default(_that.id,_that.title,_that.amountKobo,_that.category,_that.createdAt);case _:
@@ -204,7 +204,7 @@ return $default(_that.id,_that.title,_that.amountKobo,_that.category,_that.creat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  int amountKobo,  String category,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  int amountKobo,  String? category,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
 return $default(_that.id,_that.title,_that.amountKobo,_that.category,_that.createdAt);case _:
@@ -219,13 +219,13 @@ return $default(_that.id,_that.title,_that.amountKobo,_that.category,_that.creat
 @JsonSerializable()
 
 class _Expense extends Expense {
-  const _Expense({required this.id, required this.title, required this.amountKobo, required this.category, required this.createdAt}): super._();
+  const _Expense({required this.id, required this.title, required this.amountKobo, this.category, required this.createdAt}): super._();
   factory _Expense.fromJson(Map<String, dynamic> json) => _$ExpenseFromJson(json);
 
 @override final  String id;
 @override final  String title;
 @override final  int amountKobo;
-@override final  String category;
+@override final  String? category;
 @override final  DateTime createdAt;
 
 /// Create a copy of Expense
@@ -263,7 +263,7 @@ abstract mixin class _$ExpenseCopyWith<$Res> implements $ExpenseCopyWith<$Res> {
   factory _$ExpenseCopyWith(_Expense value, $Res Function(_Expense) _then) = __$ExpenseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, int amountKobo, String category, DateTime createdAt
+ String id, String title, int amountKobo, String? category, DateTime createdAt
 });
 
 
@@ -280,13 +280,13 @@ class __$ExpenseCopyWithImpl<$Res>
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? amountKobo = null,Object? category = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? amountKobo = null,Object? category = freezed,Object? createdAt = null,}) {
   return _then(_Expense(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,amountKobo: null == amountKobo ? _self.amountKobo : amountKobo // ignore: cast_nullable_to_non_nullable
-as int,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as int,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

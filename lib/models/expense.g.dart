@@ -10,7 +10,7 @@ _Expense _$ExpenseFromJson(Map<String, dynamic> json) => _Expense(
   id: json['id'] as String,
   title: json['title'] as String,
   amountKobo: (json['amountKobo'] as num).toInt(),
-  category: json['category'] as String,
+  category: json['category'] as String?,
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
 

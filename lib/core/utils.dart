@@ -28,8 +28,17 @@ class AppUtils {
   }
 
   /// Returns an avatar background color based on category.
-  static Color getAvatarColor(String category) {
-    final isFood = category.toLowerCase() == 'food';
-    return isFood ? const Color(0xFFD81B60) : const Color(0xFF1E293B);
+  static Color getAvatarColor(String? category) {
+    if (category == null) return const Color(0xFF1E293B);
+    switch (category.toLowerCase()) {
+      case 'food':
+        return const Color(0xFFD81B60);
+      case 'transport':
+        return const Color(0xFF0284C7);
+      case 'bills':
+        return const Color(0xFFEA580C);
+      default:
+        return const Color(0xFF1E293B);
+    }
   }
 }

@@ -85,7 +85,7 @@ class ExpenseListItem extends StatelessWidget {
                 ),
                 4.verticalSpace,
                 Text(
-                  expense.category,
+                  expense.category ?? 'Other',
                   style: TextStyle(
                     fontSize: 12.spMin,
                     fontWeight: FontWeight.w500,

@@ -11,7 +11,7 @@ abstract class Expense with _$Expense {
     required String id,
     required String title,
     required int amountKobo,
-    required String category,
+    String? category,
     required DateTime createdAt,
   }) = _Expense;
 
@@ -20,7 +20,6 @@ abstract class Expense with _$Expense {
   // Helper method to display amount in NGN formatted string
   String get formattedAmount {
     final naira = amountKobo / 100;
-    // We will use intl package in UI to format, but having a simple accessor is nice.
     return naira.toStringAsFixed(2);
   }
 }

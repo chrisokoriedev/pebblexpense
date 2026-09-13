@@ -74,7 +74,7 @@ final class ExpenseListProvider
   ExpenseList create() => ExpenseList();
 }
 
-String _$expenseListHash() => r'4b68d3260444cdd1a16ba706b10f38e9976e7231';
+String _$expenseListHash() => r'21b6bda93058ca76adc5a95c9fd14e8ce1c3cb17';
 
 abstract class _$ExpenseList extends $AsyncNotifier<List<Expense>> {
   FutureOr<List<Expense>> build();
@@ -132,4 +132,73 @@ final class TotalExpensesProvider extends $FunctionalProvider<int, int, int>
   }
 }
 
-String _$totalExpensesHash() => r'f07e42e4c9e4ac09f895608a63fb8eda0951a181';
+String _$totalExpensesHash() => r'9be0161706a71259b1352d78c51b590153f82b5a';
+
+@ProviderFor(expenseDetail)
+final expenseDetailProvider = ExpenseDetailFamily._();
+
+final class ExpenseDetailProvider
+    extends $FunctionalProvider<AsyncValue<Expense>, Expense, FutureOr<Expense>>
+    with $FutureModifier<Expense>, $FutureProvider<Expense> {
+  ExpenseDetailProvider._({
+    required ExpenseDetailFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'expenseDetailProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$expenseDetailHash();
+
+  @override
+  String toString() {
+    return r'expenseDetailProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Expense> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Expense> create(Ref ref) {
+    final argument = this.argument as String;
+    return expenseDetail(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ExpenseDetailProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$expenseDetailHash() => r'1fc2d8c7fa1b9f1f6f6ef8f3f1d2db0ed794a970';
+
+final class ExpenseDetailFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Expense>, String> {
+  ExpenseDetailFamily._()
+    : super(
+        retry: null,
+        name: r'expenseDetailProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ExpenseDetailProvider call(String id) =>
+      ExpenseDetailProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'expenseDetailProvider';
+}
