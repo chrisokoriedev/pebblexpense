@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:pebblexpense/core/constants/api_endpoints.dart';
+
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 class ApiException implements Exception {
   final String message;
@@ -27,8 +31,8 @@ class ApiClient {
   final int? delayMs;
 
   ApiClient({
-    this.baseUrl = 'http://127.0.0.1:3000',
-    this.bucket = 'amaka',
+    this.baseUrl = ApiEndpoints.defaultBaseUrl,
+    this.bucket = ApiEndpoints.defaultBucket,
     this.forceError,
     this.delayMs,
   });

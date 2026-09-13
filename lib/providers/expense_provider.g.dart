@@ -9,47 +9,6 @@ part of 'expense_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(apiClient)
-final apiClientProvider = ApiClientProvider._();
-
-final class ApiClientProvider
-    extends $FunctionalProvider<ApiClient, ApiClient, ApiClient>
-    with $Provider<ApiClient> {
-  ApiClientProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'apiClientProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$apiClientHash();
-
-  @$internal
-  @override
-  $ProviderElement<ApiClient> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ApiClient create(Ref ref) {
-    return apiClient(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ApiClient value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ApiClient>(value),
-    );
-  }
-}
-
-String _$apiClientHash() => r'a0eb8837fc3cfc2ac414f9bdd23761e2186e929e';
-
 @ProviderFor(ExpenseList)
 final expenseListProvider = ExpenseListProvider._();
 
@@ -74,7 +33,7 @@ final class ExpenseListProvider
   ExpenseList create() => ExpenseList();
 }
 
-String _$expenseListHash() => r'21b6bda93058ca76adc5a95c9fd14e8ce1c3cb17';
+String _$expenseListHash() => r'1ecbcdcedf2878dd3d9aa3a46752ec2d560a8910';
 
 abstract class _$ExpenseList extends $AsyncNotifier<List<Expense>> {
   FutureOr<List<Expense>> build();
@@ -183,7 +142,7 @@ final class ExpenseDetailProvider
   }
 }
 
-String _$expenseDetailHash() => r'1fc2d8c7fa1b9f1f6f6ef8f3f1d2db0ed794a970';
+String _$expenseDetailHash() => r'36806494d052dc30d7b4a5f3a1a4aa75bdc6e535';
 
 final class ExpenseDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Expense>, String> {
