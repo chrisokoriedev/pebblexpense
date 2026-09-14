@@ -60,7 +60,7 @@ npm start
 ```
 The server will run at `http://127.0.0.1:3000`.
 
-> **Device/emulator connectivity:** The app auto-probes its API host on startup: it tries `http://10.0.2.2:3000` first (works from Android emulators out of the box), then falls back to `http://127.0.0.1:3000` — which on physical devices requires a one-time USB bridge:
+> **Device/emulator connectivity:** On startup the app races all known API hosts in parallel — `http://10.0.2.2:3000` (works from Android emulators out of the box) and `http://127.0.0.1:3000` — and uses whichever answers first (2s cap). On a **physical device**, `127.0.0.1` is the phone itself, so bridge the PC server over USB once per connection:
 >
 > ```bash
 > adb reverse tcp:3000 tcp:3000

@@ -18,6 +18,20 @@
     ],
     "amaka": [
       {
+        "id": "exp_f5b67570",
+        "title": "tt",
+        "amountKobo": 500000,
+        "category": "Bills",
+        "createdAt": "2026-09-14T12:28:43.437Z"
+      },
+      {
+        "id": "exp_01451eab",
+        "title": "ggg",
+        "amountKobo": 2000000,
+        "category": "Transport",
+        "createdAt": "2026-09-14T12:28:03.614Z"
+      },
+      {
         "id": "1",
         "title": "Groceries",
         "amountKobo": 1500000,

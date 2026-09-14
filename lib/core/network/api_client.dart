@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -74,11 +75,11 @@ class ApiClient {
 
   /// Returns the base URL to use for a request.
   ///
-  /// An explicit baseUrl short-circuits probing entirely. Otherwise probes
-  /// each candidate by hitting the bucket's expense list endpoint (cheap,
-  /// no side effects) and caches the first one that responds. On Android an
-  /// unreachable host fails fast with "Connection refused", so probing adds
-  /// no meaningful latency on the happy path.
+  /// An explicit baseUrl short-circuits probing entirely. Otherwise races
+  /// all candidate hosts in parallel and caches the first one that answers
+  /// (capped at 2s). Racing matters: on a physical phone `10.0.2.2` never
+  /// refuses the connection (packets just vanish), so a serial probe would
+  /// burn the whole timeout before trying the next host.
   Future<String> _resolveBaseUrl() async {
     if (baseUrl != _autoBaseUrl) {
       return baseUrl;
@@ -90,30 +91,58 @@ class ApiClient {
   }
 
   Future<String> _probeBaseUrls() async {
-    Object? lastError;
-    for (final candidate in ApiEndpoints.candidateBaseUrls) {
-      try {
-        final uri = Uri.parse(
-          '$candidate${ApiEndpoints.expenses(bucket)}',
+    final candidates = ApiEndpoints.candidateBaseUrls;
+    final completer = Completer<String>();
+    var settled = false;
+    var pending = candidates.length;
+
+    void onCandidateFailure(Object error) {
+      pending--;
+      if (pending == 0 && !settled && !completer.isCompleted) {
+        settled = true;
+        _probeFuture = null; // Uncached so the next request re-probes.
+        completer.completeError(
+          ApiException(
+            'Could not reach the mock API on any known host. Make sure the '
+            'server is running (cd server && npm start) and, if you are on a '
+            'physical device over USB, run: adb reverse tcp:3000 tcp:3000. '
+            'Last error: $error',
+          ),
         );
-        final response = await http
-            .get(uri, headers: _buildHeaders())
-            .timeout(const Duration(seconds: 3));
-        if (response.statusCode < 500) {
-          _resolvedBaseUrl = candidate;
-          return candidate;
-        }
-        lastError = ApiException(
-          'Server error: ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
-      } catch (e) {
-        lastError = e;
       }
     }
-    // Nothing answered; don't cache so the next request retries the probe.
-    _probeFuture = null;
-    throw ApiException('Failed to connect to the server: $lastError');
+
+    for (final candidate in candidates) {
+      final uri = Uri.parse('$candidate${ApiEndpoints.expenses(bucket)}');
+      unawaited(() async {
+        try {
+          final response = await http
+              .get(uri, headers: _buildHeaders())
+              .timeout(const Duration(seconds: 2));
+          if (settled) {
+            return;
+          }
+          if (response.statusCode < 500) {
+            settled = true;
+            _resolvedBaseUrl = candidate;
+            if (!completer.isCompleted) {
+              completer.complete(candidate);
+            }
+          } else {
+            onCandidateFailure(
+              ApiException(
+                'Server error: ${response.statusCode}',
+                statusCode: response.statusCode,
+              ),
+            );
+          }
+        } catch (e) {
+          onCandidateFailure(e);
+        }
+      }());
+    }
+
+    return completer.future;
   }
 
   Future<dynamic> get(String endpoint, {Map<String, String>? headers}) async {
