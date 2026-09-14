@@ -60,13 +60,13 @@ npm start
 ```
 The server will run at `http://127.0.0.1:3000`.
 
-> **Running on a physical Android device?** On the phone, `127.0.0.1` refers to the phone itself, not your PC — so the app will show "Connection refused" on initial load. Bridge it over USB once per device connection:
+> **Device/emulator connectivity:** The app auto-probes its API host on startup: it tries `http://10.0.2.2:3000` first (works from Android emulators out of the box), then falls back to `http://127.0.0.1:3000` — which on physical devices requires a one-time USB bridge:
 >
 > ```bash
 > adb reverse tcp:3000 tcp:3000
 > ```
 >
-> (Android emulators work out of the box via `10.0.2.2`, but the app targets `127.0.0.1`, so run the same `adb reverse` command there too — or switch `ApiEndpoints.defaultBaseUrl`.)
+> The winning host is cached for the session; if nothing answers, the next request re-probes.
 
 *To run backend test suite:*
 ```bash
