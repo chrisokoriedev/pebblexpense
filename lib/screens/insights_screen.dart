@@ -1,8 +1,8 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pebblexpense/core/constants/app_constants.dart';
 import 'package:pebblexpense/core/utils.dart';
 import 'package:pebblexpense/models/expense.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
@@ -17,56 +17,144 @@ class InsightsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
-        child: expensesAsync.when(
-          data: (expenses) {
-            if (expenses.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No expense data available yet.\nAdd some expenses to view weekly insights!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black54),
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(expenseListProvider.notifier).refresh(),
+          child: expensesAsync.when(
+            data: (expenses) {
+              if (expenses.isEmpty) {
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    SizedBox(height: 120.h),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.bar_chart_rounded,
+                            size: 48.spMin,
+                            color: Colors.black26,
+                          ),
+                          12.verticalSpace,
+                          Text(
+                            'No expense data available yet.\nAdd some expenses to view weekly insights!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13.spMin,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Spending Insights',
+                      style: TextStyle(
+                        fontSize: 22.spMin,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    3.verticalSpace,
+                    Text(
+                      'Weekly activity and spending velocity',
+                      style: TextStyle(
+                        fontSize: 12.spMin,
+                        color: Colors.black45,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    16.verticalSpace,
+
+                    // Weekly Bar Chart Card (inspired by reference UI)
+                    _WeeklyBarChartCard(expenses: expenses),
+
+                    16.verticalSpace,
+
+                    // Summary Metric Cards
+                    _InsightsMetricGrid(expenses: expenses),
+                  ],
                 ),
               );
-            }
-
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Spending Insights',
-                    style: TextStyle(
-                      fontSize: 24.spMin,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: 120.h),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 28.w),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(14.w),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFFEBEE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.wifi_off_rounded,
+                            size: 32.spMin,
+                            color: const Color(0xFFE53935),
+                          ),
+                        ),
+                        12.verticalSpace,
+                        Text(
+                          'Unable to Load Insights',
+                          style: TextStyle(
+                            fontSize: 16.spMin,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        6.verticalSpace,
+                        Text(
+                          'Check your backend connection and try again.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12.spMin,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        16.verticalSpace,
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              ref.read(expenseListProvider.notifier).refresh(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFCEF175),
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100.r),
+                            ),
+                          ),
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: Text(
+                            'Retry',
+                            style: TextStyle(
+                              fontSize: 13.spMin,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  4.verticalSpace,
-                  Text(
-                    'Weekly activity and spending patterns',
-                    style: TextStyle(
-                      fontSize: 13.spMin,
-                      color: Colors.black45,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  20.verticalSpace,
-
-                  // Weekly Bar Chart Card (inspired by reference UI)
-                  _WeeklyBarChartCard(expenses: expenses),
-
-                  20.verticalSpace,
-
-                  // Summary Metric Cards
-                  _InsightsMetricGrid(expenses: expenses),
-                ],
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: Text('Error loading insights: $e'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -81,13 +169,10 @@ class _WeeklyBarChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Compute spending for each day of the week (Sunday = 0 .. Saturday = 6)
     final List<int> dayTotalsKobo = List.filled(7, 0);
     const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
     for (final exp in expenses) {
-      // DateTime weekday: 1 = Monday, 7 = Sunday
-      // Map to Sunday = 0, Monday = 1 ... Saturday = 6
       final dayIndex = exp.createdAt.toLocal().weekday % 7;
       dayTotalsKobo[dayIndex] += exp.amountKobo;
     }
@@ -100,15 +185,15 @@ class _WeeklyBarChartCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
+      padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -121,40 +206,41 @@ class _WeeklyBarChartCard extends StatelessWidget {
               Text(
                 'Weekly Activity',
                 style: TextStyle(
-                  fontSize: 16.spMin,
+                  fontSize: 15.spMin,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
                 ),
               ),
+              // Flat, compact green/black pill matching FAB
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F0F4),
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: const Color(0xFFCEF175),
+                  borderRadius: BorderRadius.circular(100.r),
                 ),
                 child: Text(
                   'Daily Average: ${AppUtils.formatCurrency(avgDailyKobo)}',
                   style: TextStyle(
                     fontSize: 11.spMin,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
                   ),
                 ),
               ),
             ],
           ),
-          24.verticalSpace,
+          20.verticalSpace,
 
-          // Bar Chart with Dashed Average Line
+          // Bar Chart with Dashed Average Guideline
           SizedBox(
-            height: 180.h,
+            height: 160.h,
             child: Stack(
               children: [
-                // Dashed Average Guideline across chart
+                // Dashed Guideline
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 24.h + (140.h * avgRatio),
+                  bottom: 24.h + (120.h * avgRatio),
                   child: Row(
                     children: [
                       Text(
@@ -183,39 +269,46 @@ class _WeeklyBarChartCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: List.generate(7, (index) {
                       final amount = dayTotalsKobo[index];
-                      final barRatio = maxDayKobo > 0 ? (amount / effectiveMax).clamp(0.0, 1.0) : 0.0;
+                      final barRatio = maxDayKobo > 0
+                          ? (amount / effectiveMax).clamp(0.0, 1.0)
+                          : 0.0;
 
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          // Bar container with track
                           Container(
-                            width: 32.w,
-                            height: 140.h,
+                            width: 28.w,
+                            height: 124.h,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF2F2F4), // Light grey track
-                              borderRadius: BorderRadius.circular(10.r),
+                              color: const Color(0xFFF2F2F4),
+                              borderRadius: BorderRadius.circular(8.r),
                             ),
                             alignment: Alignment.bottomCenter,
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 500),
                               curve: Curves.easeOutCubic,
-                              width: 32.w,
-                              height: (140.h * barRatio).clamp(barRatio > 0 ? 8.h : 0.0, 140.h),
+                              width: 28.w,
+                              height: (124.h * barRatio).clamp(
+                                barRatio > 0 ? 8.h : 0.0,
+                                124.h,
+                              ),
                               decoration: BoxDecoration(
-                                color: barRatio > 0 ? const Color(0xFF2C2C2E) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10.r),
+                                color: barRatio > 0
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8.r),
                               ),
                             ),
                           ),
                           8.verticalSpace,
-                          // Day letter label
                           Text(
                             dayLabels[index],
                             style: TextStyle(
-                              fontSize: 12.spMin,
+                              fontSize: 11.spMin,
                               fontWeight: FontWeight.w700,
-                              color: barRatio > 0 ? Colors.black87 : Colors.black38,
+                              color: barRatio > 0
+                                  ? Colors.black87
+                                  : Colors.black38,
                             ),
                           ),
                         ],
@@ -266,15 +359,24 @@ class _InsightsMetricGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalKobo = expenses.fold<int>(0, (sum, e) => sum + e.amountKobo);
     final avgKobo = (totalKobo / expenses.length).round();
-    final maxExpense = expenses.reduce((a, b) => a.amountKobo > b.amountKobo ? a : b);
+    final maxExpense = expenses.reduce(
+      (a, b) => a.amountKobo > b.amountKobo ? a : b,
+    );
 
-    // Compute peak spending day
     final Map<int, int> dayTotals = {};
     for (final exp in expenses) {
       final day = exp.createdAt.toLocal().weekday % 7;
       dayTotals[day] = (dayTotals[day] ?? 0) + exp.amountKobo;
     }
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayNames = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
     int peakDayIndex = 0;
     int peakDayTotal = -1;
     dayTotals.forEach((day, total) {
@@ -292,13 +394,13 @@ class _InsightsMetricGrid extends StatelessWidget {
               child: _MetricCard(
                 title: 'Average Expense',
                 value: AppUtils.formatCurrency(avgKobo),
-                subtitle: 'per recorded item',
+                subtitle: 'per item',
                 icon: Icons.auto_graph_rounded,
                 iconColor: const Color(0xFF1E88E5),
                 bgColor: const Color(0xFFE8F1FF),
               ),
             ),
-            12.horizontalSpace,
+            10.horizontalSpace,
             Expanded(
               child: _MetricCard(
                 title: 'Peak Day',
@@ -311,7 +413,7 @@ class _InsightsMetricGrid extends StatelessWidget {
             ),
           ],
         ),
-        12.verticalSpace,
+        10.verticalSpace,
         Row(
           children: [
             Expanded(
@@ -324,7 +426,7 @@ class _InsightsMetricGrid extends StatelessWidget {
                 bgColor: const Color(0xFFFFEBEE),
               ),
             ),
-            12.horizontalSpace,
+            10.horizontalSpace,
             Expanded(
               child: _MetricCard(
                 title: 'Total Tracked',
@@ -362,13 +464,13 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.containerRadius),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -378,35 +480,35 @@ class _MetricCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 18.r,
+            radius: 16.r,
             backgroundColor: bgColor,
-            child: Icon(icon, color: iconColor, size: 18.spMin),
+            child: Icon(icon, color: iconColor, size: 16.spMin),
           ),
-          12.verticalSpace,
+          10.verticalSpace,
           Text(
             title,
             style: TextStyle(
-              fontSize: 12.spMin,
+              fontSize: 11.spMin,
               color: Colors.black45,
               fontWeight: FontWeight.w600,
             ),
           ),
-          4.verticalSpace,
+          3.verticalSpace,
           Text(
             value,
             style: TextStyle(
-              fontSize: 15.spMin,
+              fontSize: 14.spMin,
               fontWeight: FontWeight.w800,
               color: Colors.black,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          4.verticalSpace,
+          2.verticalSpace,
           Text(
             subtitle,
             style: TextStyle(
-              fontSize: 11.spMin,
+              fontSize: 10.spMin,
               color: Colors.black38,
               fontWeight: FontWeight.w500,
             ),

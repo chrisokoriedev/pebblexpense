@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pebblexpense/core/constants/app_constants.dart';
-import 'package:pebblexpense/core/constants/app_padding.dart';
 import 'package:pebblexpense/core/utils.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
 
@@ -13,25 +12,41 @@ class BalanceSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totalAmountKobo = ref.watch(totalExpensesProvider);
     final totalText = AppUtils.formatCurrency(totalAmountKobo);
-    final expensesCount = ref.watch(expenseListProvider).value?.length ?? 0;
+    final expenses = ref.watch(expenseListProvider).value ?? [];
+    final expensesCount = expenses.length;
+
+    // Calculate category totals for mini proportion bar
+    final Map<String, int> categoryTotals = {};
+    for (final cat in AppConstants.categories) {
+      categoryTotals[cat] = 0;
+    }
+    for (final exp in expenses) {
+      final cat = exp.category ?? 'Other';
+      categoryTotals[cat] = (categoryTotals[cat] ?? 0) + exp.amountKobo;
+    }
+
+    final activeCategories = AppConstants.categories.where((cat) {
+      return (categoryTotals[cat] ?? 0) > 0;
+    }).toList();
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 14,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -39,70 +54,120 @@ class BalanceSection extends ConsumerWidget {
                 Text(
                   'Total Spending',
                   style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 14.spMin,
-                    fontWeight: FontWeight.w500,
+                    color: Colors.black45,
+                    fontSize: 13.spMin,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 3.h,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFCEF175),
-                    borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
+                    color: const Color(0xFFCEF175), // Vibrant Lime matching FAB
+                    borderRadius: BorderRadius.circular(100.r),
                   ),
                   child: Text(
                     '$expensesCount ${expensesCount == 1 ? "expense" : "expenses"}',
                     style: TextStyle(
                       fontSize: 11.spMin,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                      color: Colors.black,
+                      letterSpacing: -0.2,
                     ),
                   ),
                 ),
               ],
             ),
-            12.verticalSpace,
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                totalText,
-                style: TextStyle(
-                  fontSize: 36.spMin,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -1.0,
-                  color: Colors.black,
+            10.verticalSpace,
+            Text(
+              totalText,
+              style: TextStyle(
+                fontSize: 34.spMin,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.0,
+                color: Colors.black,
+              ),
+            ),
+            if (activeCategories.isNotEmpty && totalAmountKobo > 0) ...[
+              14.verticalSpace,
+              // Flat, compact mini proportion bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4.r),
+                child: SizedBox(
+                  height: 6.h,
+                  child: Row(
+                    children: activeCategories.map((cat) {
+                      final amount = categoryTotals[cat] ?? 0;
+                      final flex = (amount * 1000 ~/ totalAmountKobo).clamp(
+                        1,
+                        1000,
+                      );
+                      final color =
+                          AppConstants.categoryChartColors[cat] ??
+                          const Color(0xFF4EA5F5);
+                      return Expanded(
+                        flex: flex,
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 1.w),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-            14.verticalSpace,
-            Container(
-              padding: AppPadding.smallSymmetric,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9F9F9),
-                borderRadius: BorderRadius.circular(AppConstants.containerRadius),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: AppConstants.categories.map((category) {
-                  final emoji = AppUtils.getCategoryEmoji(category);
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(emoji, style: TextStyle(fontSize: 14.spMin)),
-                      4.horizontalSpace,
-                      Text(
-                        category,
-                        style: TextStyle(
-                          fontSize: 11.spMin,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black54,
+              8.verticalSpace,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Budget allocation',
+                    style: TextStyle(
+                      fontSize: 11.spMin,
+                      color: Colors.black38,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Row(
+                    children: activeCategories.take(3).map((cat) {
+                      final color =
+                          AppConstants.categoryChartColors[cat] ??
+                          const Color(0xFF4EA5F5);
+                      return Padding(
+                        padding: EdgeInsets.only(left: 8.w),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6.r,
+                              height: 6.r,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            4.horizontalSpace,
+                            Text(
+                              cat,
+                              style: TextStyle(
+                                fontSize: 10.spMin,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
-            ),
+            ],
           ],
         ),
       ),

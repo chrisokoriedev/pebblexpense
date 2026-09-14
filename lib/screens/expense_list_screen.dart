@@ -4,7 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pebblexpense/core/constants/app_strings.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
-import 'package:pebblexpense/screens/stats_screen.dart';
+import 'package:pebblexpense/screens/all_transactions_screen.dart';
+import 'package:pebblexpense/screens/category_analysis_screen.dart';
+import 'package:pebblexpense/screens/insights_screen.dart';
 import 'package:pebblexpense/widgets/top_header.dart';
 import 'package:pebblexpense/widgets/balance_section.dart';
 import 'package:pebblexpense/widgets/transaction_list.dart';
@@ -30,7 +32,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
         child: IndexedStack(
           index: _currentTab,
           children: [
-            // Tab 0: Home Expense List
+            // Tab 0: Home Dashboard
             RefreshIndicator(
               onRefresh: () => ref.read(expenseListProvider.notifier).refresh(),
               child: CustomScrollView(
@@ -50,12 +52,19 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            AppStrings.viewAll,
-                            style: TextStyle(
-                              fontSize: 13.spMin,
-                              color: Colors.black45,
-                              fontWeight: FontWeight.w600,
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _currentTab = 3; // Switch to All Transactions tab
+                              });
+                            },
+                            child: Text(
+                              AppStrings.viewAll,
+                              style: TextStyle(
+                                fontSize: 13.spMin,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -67,8 +76,14 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
               ),
             ),
 
-            // Tab 1: Stats Screen
-            const StatsScreen(),
+            // Tab 1: Weekly Insights & Bar Chart
+            const InsightsScreen(),
+
+            // Tab 2: Category Analysis & Proportions
+            const CategoryAnalysisScreen(),
+
+            // Tab 3: All Transactions with Search
+            const AllTransactionsScreen(),
           ],
         ),
       ),

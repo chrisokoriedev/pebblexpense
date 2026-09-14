@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pebblexpense/core/constants/app_constants.dart';
 import 'package:pebblexpense/core/utils.dart';
-import 'package:pebblexpense/models/expense.dart';
 import 'package:pebblexpense/providers/expense_provider.dart';
 
 class CategoryAnalysisScreen extends ConsumerWidget {
@@ -16,97 +15,167 @@ class CategoryAnalysisScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
-        child: expensesAsync.when(
-          data: (expenses) {
-            if (expenses.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No categories to analyze yet.\nAdd some expenses to see the category breakdown!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black54),
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(expenseListProvider.notifier).refresh(),
+          child: expensesAsync.when(
+            data: (expenses) {
+              if (expenses.isEmpty) {
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    SizedBox(height: 120.h),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.pie_chart_outline_rounded, size: 48.spMin, color: Colors.black26),
+                          12.verticalSpace,
+                          Text(
+                            'No categories to analyze yet.\nAdd some expenses to see the breakdown!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 13.spMin, color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              final totalKobo = expenses.fold<int>(0, (sum, e) => sum + e.amountKobo);
+
+              // Compute amounts and counts per category
+              final Map<String, int> categoryTotals = {};
+              final Map<String, int> categoryCounts = {};
+              for (final cat in AppConstants.categories) {
+                categoryTotals[cat] = 0;
+                categoryCounts[cat] = 0;
+              }
+
+              for (final exp in expenses) {
+                final cat = exp.category ?? 'Other';
+                categoryTotals[cat] = (categoryTotals[cat] ?? 0) + exp.amountKobo;
+                categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
+              }
+
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Category Analysis',
+                      style: TextStyle(
+                        fontSize: 22.spMin,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    3.verticalSpace,
+                    Text(
+                      'Distribution of your spending across categories',
+                      style: TextStyle(
+                        fontSize: 12.spMin,
+                        color: Colors.black45,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    16.verticalSpace,
+
+                    // Segmented Proportion Bar Card
+                    _SegmentedDistributionCard(
+                      categoryTotals: categoryTotals,
+                      totalKobo: totalKobo,
+                    ),
+
+                    20.verticalSpace,
+
+                    Text(
+                      'Category Breakdown',
+                      style: TextStyle(
+                        fontSize: 16.spMin,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                    ),
+                    10.verticalSpace,
+
+                    // Detailed breakdown cards for each category
+                    ...AppConstants.categories.map((category) {
+                      final amountKobo = categoryTotals[category] ?? 0;
+                      final count = categoryCounts[category] ?? 0;
+                      final percentage = totalKobo > 0 ? (amountKobo / totalKobo) * 100 : 0.0;
+                      final chartColor = AppConstants.categoryChartColors[category] ?? const Color(0xFF4EA5F5);
+
+                      return _CategoryDetailCard(
+                        category: category,
+                        amountKobo: amountKobo,
+                        count: count,
+                        percentage: percentage,
+                        chartColor: chartColor,
+                      );
+                    }),
+                  ],
                 ),
               );
-            }
-
-            final totalKobo = expenses.fold<int>(0, (sum, e) => sum + e.amountKobo);
-
-            // Compute amounts and counts per category
-            final Map<String, int> categoryTotals = {};
-            final Map<String, int> categoryCounts = {};
-            for (final cat in AppConstants.categories) {
-              categoryTotals[cat] = 0;
-              categoryCounts[cat] = 0;
-            }
-
-            for (final exp in expenses) {
-              final cat = exp.category ?? 'Other';
-              categoryTotals[cat] = (categoryTotals[cat] ?? 0) + exp.amountKobo;
-              categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
-            }
-
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Category Analysis',
-                    style: TextStyle(
-                      fontSize: 24.spMin,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: 120.h),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 28.w),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(14.w),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFFEBEE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.wifi_off_rounded,
+                            size: 32.spMin,
+                            color: const Color(0xFFE53935),
+                          ),
+                        ),
+                        12.verticalSpace,
+                        Text(
+                          'Connection Error',
+                          style: TextStyle(fontSize: 16.spMin, fontWeight: FontWeight.w700),
+                        ),
+                        6.verticalSpace,
+                        Text(
+                          'Could not load categories. Check your connection and retry.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12.spMin, color: Colors.black54),
+                        ),
+                        16.verticalSpace,
+                        ElevatedButton.icon(
+                          onPressed: () => ref.read(expenseListProvider.notifier).refresh(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFCEF175),
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100.r)),
+                          ),
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: Text(
+                            'Retry',
+                            style: TextStyle(fontSize: 13.spMin, fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  4.verticalSpace,
-                  Text(
-                    'Distribution of your spending across categories',
-                    style: TextStyle(
-                      fontSize: 13.spMin,
-                      color: Colors.black45,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  20.verticalSpace,
-
-                  // Segmented Distribution Bar Card (direct recreation from reference screenshot)
-                  _SegmentedDistributionCard(
-                    categoryTotals: categoryTotals,
-                    totalKobo: totalKobo,
-                  ),
-
-                  24.verticalSpace,
-
-                  Text(
-                    'Category Breakdown',
-                    style: TextStyle(
-                      fontSize: 18.spMin,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
-                  ),
-                  12.verticalSpace,
-
-                  // Detailed breakdown cards for each category
-                  ...AppConstants.categories.map((category) {
-                    final amountKobo = categoryTotals[category] ?? 0;
-                    final count = categoryCounts[category] ?? 0;
-                    final percentage = totalKobo > 0 ? (amountKobo / totalKobo) * 100 : 0.0;
-                    final chartColor = AppConstants.categoryChartColors[category] ?? const Color(0xFF4EA5F5);
-
-                    return _CategoryDetailCard(
-                      category: category,
-                      amountKobo: amountKobo,
-                      count: count,
-                      percentage: percentage,
-                      chartColor: chartColor,
-                    );
-                  }),
-                ],
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -124,22 +193,21 @@ class _SegmentedDistributionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate non-zero categories for display
     final activeCategories = AppConstants.categories.where((cat) {
       return (categoryTotals[cat] ?? 0) > 0;
     }).toList();
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -152,7 +220,7 @@ class _SegmentedDistributionCard extends StatelessWidget {
               Text(
                 'Spending Proportion',
                 style: TextStyle(
-                  fontSize: 16.spMin,
+                  fontSize: 15.spMin,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
                 ),
@@ -160,20 +228,20 @@ class _SegmentedDistributionCard extends StatelessWidget {
               Text(
                 AppUtils.formatCurrency(totalKobo),
                 style: TextStyle(
-                  fontSize: 15.spMin,
+                  fontSize: 14.spMin,
                   fontWeight: FontWeight.w800,
                   color: Colors.black,
                 ),
               ),
             ],
           ),
-          18.verticalSpace,
+          16.verticalSpace,
 
           // Horizontal Segmented Bar (matching reference screenshot)
           ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(8.r),
             child: SizedBox(
-              height: 28.h,
+              height: 22.h,
               child: activeCategories.isEmpty
                   ? Container(color: const Color(0xFFF0F0F2))
                   : Row(
@@ -185,10 +253,10 @@ class _SegmentedDistributionCard extends StatelessWidget {
                         return Expanded(
                           flex: flex,
                           child: Container(
-                            margin: EdgeInsets.symmetric(horizontal: 1.5.w),
+                            margin: EdgeInsets.symmetric(horizontal: 1.w),
                             decoration: BoxDecoration(
                               color: color,
-                              borderRadius: BorderRadius.circular(8.r),
+                              borderRadius: BorderRadius.circular(4.r),
                             ),
                           ),
                         );
@@ -197,12 +265,12 @@ class _SegmentedDistributionCard extends StatelessWidget {
             ),
           ),
 
-          16.verticalSpace,
+          14.verticalSpace,
 
-          // Legend chips with percentages (like screenshot: ■ Fashion 52.7%   ■ Transport 21.4%)
+          // Legend chips with percentages (flat and compact)
           Wrap(
-            spacing: 16.w,
-            runSpacing: 8.h,
+            spacing: 14.w,
+            runSpacing: 6.h,
             children: AppConstants.categories.map((category) {
               final amount = categoryTotals[category] ?? 0;
               final pct = totalKobo > 0 ? (amount / totalKobo) * 100 : 0.0;
@@ -212,18 +280,18 @@ class _SegmentedDistributionCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 10.w,
-                    height: 10.h,
+                    width: 8.w,
+                    height: 8.h,
                     decoration: BoxDecoration(
                       color: color,
-                      borderRadius: BorderRadius.circular(3.r),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
-                  6.horizontalSpace,
+                  5.horizontalSpace,
                   Text(
                     category,
                     style: TextStyle(
-                      fontSize: 12.spMin,
+                      fontSize: 11.5.spMin,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
@@ -232,7 +300,7 @@ class _SegmentedDistributionCard extends StatelessWidget {
                   Text(
                     '${pct.toStringAsFixed(1)}%',
                     style: TextStyle(
-                      fontSize: 11.spMin,
+                      fontSize: 10.5.spMin,
                       fontWeight: FontWeight.w500,
                       color: Colors.black45,
                     ),
@@ -268,11 +336,11 @@ class _CategoryDetailCard extends StatelessWidget {
     final avatarBg = AppUtils.getAvatarColor(category);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.only(bottom: 10.h),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.containerRadius),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -286,11 +354,11 @@ class _CategoryDetailCard extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                radius: 20.r,
+                radius: 18.r,
                 backgroundColor: avatarBg,
-                child: Text(emoji, style: TextStyle(fontSize: 18.spMin)),
+                child: Text(emoji, style: TextStyle(fontSize: 16.spMin)),
               ),
-              14.horizontalSpace,
+              12.horizontalSpace,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,7 +366,7 @@ class _CategoryDetailCard extends StatelessWidget {
                     Text(
                       category,
                       style: TextStyle(
-                        fontSize: 15.spMin,
+                        fontSize: 14.spMin,
                         fontWeight: FontWeight.w700,
                         color: Colors.black,
                       ),
@@ -307,7 +375,7 @@ class _CategoryDetailCard extends StatelessWidget {
                     Text(
                       '$count ${count == 1 ? "expense" : "expenses"}',
                       style: TextStyle(
-                        fontSize: 12.spMin,
+                        fontSize: 11.spMin,
                         color: Colors.black45,
                         fontWeight: FontWeight.w500,
                       ),
@@ -321,22 +389,22 @@ class _CategoryDetailCard extends StatelessWidget {
                   Text(
                     AppUtils.formatCurrency(amountKobo),
                     style: TextStyle(
-                      fontSize: 15.spMin,
+                      fontSize: 14.spMin,
                       fontWeight: FontWeight.w800,
                       color: Colors.black,
                     ),
                   ),
                   2.verticalSpace,
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: chartColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       '${percentage.toStringAsFixed(1)}%',
                       style: TextStyle(
-                        fontSize: 11.spMin,
+                        fontSize: 10.spMin,
                         fontWeight: FontWeight.w700,
                         color: chartColor,
                       ),
@@ -346,13 +414,12 @@ class _CategoryDetailCard extends StatelessWidget {
               ),
             ],
           ),
-          12.verticalSpace,
-          // Progress line
+          10.verticalSpace,
           ClipRRect(
-            borderRadius: BorderRadius.circular(4.r),
+            borderRadius: BorderRadius.circular(3.r),
             child: LinearProgressIndicator(
               value: (percentage / 100).clamp(0.0, 1.0),
-              minHeight: 5.h,
+              minHeight: 4.h,
               backgroundColor: const Color(0xFFF2F2F4),
               valueColor: AlwaysStoppedAnimation<Color>(chartColor),
             ),
