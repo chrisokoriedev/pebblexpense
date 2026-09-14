@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pebblexpense/core/utils.dart';
-import 'package:pebblexpense/features/insights/presentation/controllers/weekly_insights_controller.dart';
+import 'package:pebblexpense/core/utils/utils.dart';
+import 'package:pebblexpense/features/insights/controller/weekly_insights_controller.dart';
 import 'package:pebblexpense/features/insights/presentation/widgets/insight_metric_card.dart';
 
 class InsightsMetricGrid extends StatelessWidget {
